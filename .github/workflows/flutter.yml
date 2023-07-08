@@ -13,10 +13,10 @@ jobs:
         with:
           flutter-version: '3.10.5'
           channel: 'stable'
-      - run: flutter build apk
+      - run: flutter build apk --suppress-analytics
 
       - name: Install dependencies
-        run: flutter pub get
+        run: flutter pub get --suppress-analytics
 
       - name: Upload APK
         uses: actions/upload-artifact@v3

@@ -19,7 +19,6 @@ You can install this app on your Android device by downloading the APK file from
 <img src="assets/screenshots/home.png" width="200" height="400" />
 <img src="assets/screenshots/addServer.png" width="200" height="400" />
 <img src="assets/screenshots/publicServers.png" width="200" height="400" />
-<img src="assets/screenshots/addPublicServer.png" width="200" height="400" />
 
 ## Logging
 
