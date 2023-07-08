@@ -602,7 +602,6 @@ class _MyConnectServerPageState extends State<MyConnectServerPage> {
 }
 
 class _MyChatPageState extends State<MyChatPage> {
-  final _formKey = GlobalKey<FormState>();
   final _textController = TextEditingController();
   final _scrollController = ScrollController();
 
@@ -700,8 +699,6 @@ class _MyChatPageState extends State<MyChatPage> {
   void _sendMessage() {
     if (_textController.text.isEmpty) return;
 
-    _formKey.currentState!.save();
-
     widget.socket.write("{\"op\":\"msg\",\"msg\":\"${_textController.text}\"}");
 
     _addMessage(MessageList(
@@ -762,58 +759,55 @@ class _MyChatPageState extends State<MyChatPage> {
                   },
                 ),
               ),
-              Form(
-                key: _formKey,
-                child: Row(
-                  children: [
-                    Container(
-                      margin: const EdgeInsets.all(10),
-                      width: orientation == Orientation.portrait
-                          ? MediaQuery.of(context).size.width * 0.79
-                          : MediaQuery.of(context).size.width * 0.901,
-                      height: orientation == Orientation.portrait
-                          ? MediaQuery.of(context).size.height * 0.06
-                          : MediaQuery.of(context).size.height * 0.135,
-                      child: TextFormField(
-                        controller: _textController,
-                        autofocus: true,
-                        textInputAction: TextInputAction.send,
-                        onFieldSubmitted: (_) => _sendMessage(),
-                        decoration: InputDecoration(
-                          filled: true,
-                          fillColor: Theme.of(context).colorScheme.surface,
-                          hintText: 'Enter a message',
-                          contentPadding: const EdgeInsets.all(16),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(16),
-                            borderSide: const BorderSide(
-                              width: 0,
-                              style: BorderStyle.none,
-                            ),
+              Row(
+                children: [
+                  Container(
+                    margin: const EdgeInsets.all(10),
+                    width: orientation == Orientation.portrait
+                        ? MediaQuery.of(context).size.width * 0.79
+                        : MediaQuery.of(context).size.width * 0.901,
+                    height: orientation == Orientation.portrait
+                        ? MediaQuery.of(context).size.height * 0.06
+                        : MediaQuery.of(context).size.height * 0.135,
+                    child: TextFormField(
+                      controller: _textController,
+                      autofocus: true,
+                      textInputAction: TextInputAction.send,
+                      onFieldSubmitted: (_) => _sendMessage(),
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: Theme.of(context).colorScheme.surface,
+                        hintText: 'Enter a message',
+                        contentPadding: const EdgeInsets.all(16),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: const BorderSide(
+                            width: 0,
+                            style: BorderStyle.none,
                           ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(16),
-                            borderSide: BorderSide(
-                              color: Theme.of(context).colorScheme.surfaceVariant,
-                              width: 2,
-                            ),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: BorderSide(
+                            color: Theme.of(context).colorScheme.surfaceVariant,
+                            width: 2,
                           ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(16),
-                            borderSide: BorderSide(
-                              color: Theme.of(context).colorScheme.surfaceVariant,
-                              width: 2,
-                            ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: BorderSide(
+                            color: Theme.of(context).colorScheme.surfaceVariant,
+                            width: 2,
                           ),
                         ),
                       ),
                     ),
-                    FloatingActionButton(
-                      onPressed: _textController.text.isEmpty ? null : _sendMessage,
-                      child: const Icon(Icons.send_rounded),
-                    ),
-                  ],
-                ),
+                  ),
+                  FloatingActionButton(
+                    onPressed: _textController.text.isEmpty ? null : _sendMessage,
+                    child: const Icon(Icons.send_rounded),
+                  ),
+                ],
               ),
             ],
           );
@@ -824,7 +818,6 @@ class _MyChatPageState extends State<MyChatPage> {
 }
 
 class _MyPublicServersPageState extends State<PublicServersPage> {
-  final _formKey = GlobalKey<FormState>();
   final _textController = TextEditingController();
   late String _username = '';
 
@@ -879,51 +872,46 @@ class _MyPublicServersPageState extends State<PublicServersPage> {
                               },
                               child: AlertDialog(
                                 title: const Text('Enter your username'),
-                                content: Form(
-                                  key: _formKey,
-                                  child: TextFormField(
-                                    controller: _textController,
-                                    autofocus: true,
-                                    decoration: InputDecoration(
-                                      filled: true,
-                                      fillColor: Theme.of(context).colorScheme.surface,
-                                      hintText: 'Username',
-                                      contentPadding: const EdgeInsets.all(16),
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(16),
-                                        borderSide: const BorderSide(
-                                          width: 0,
-                                          style: BorderStyle.none,
-                                        ),
-                                      ),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(16),
-                                        borderSide: BorderSide(
-                                          color: Theme.of(context).colorScheme.surfaceVariant,
-                                          width: 2,
-                                        ),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(16),
-                                        borderSide: BorderSide(
-                                          color: Theme.of(context).colorScheme.surfaceVariant,
-                                          width: 2,
-                                        ),
+                                content: TextFormField(
+                                  controller: _textController,
+                                  autofocus: true,
+                                  decoration: InputDecoration(
+                                    filled: true,
+                                    fillColor: Theme.of(context).colorScheme.surface,
+                                    hintText: 'Username',
+                                    contentPadding: const EdgeInsets.all(16),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                      borderSide: const BorderSide(width: 2),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                      borderSide: BorderSide(
+                                        color: Theme.of(context).colorScheme.surfaceVariant,
+                                        width: 2,
                                       ),
                                     ),
-                                    validator: (value) {
-                                      if (value == null || value.isEmpty) {
-                                        return 'Please enter your username';
-                                      }
-
-                                      if (value.length > 16) {
-                                        return 'Username must be 16 characters max.';
-                                      }
-
-                                      return null;
-                                    },
-                                    onSaved: (value) => _username = value!,
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                      borderSide: BorderSide(
+                                        color: Theme.of(context).colorScheme.surfaceVariant,
+                                        width: 2,
+                                      ),
+                                    ),
                                   ),
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return 'Please enter your username';
+                                    }
+
+                                    if (value.length > 16) {
+                                      return 'Username must be 16 characters max.';
+                                    }
+
+                                    return null;
+                                  },
+                                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                                  onSaved: (value) => _username = value!,    
                                 ),
                                 actions: [
                                   TextButton(
@@ -936,21 +924,19 @@ class _MyPublicServersPageState extends State<PublicServersPage> {
                                   ),
                                   TextButton(
                                     onPressed: () {
-                                      if (_formKey.currentState!.validate()) {
-                                        _formKey.currentState!.save();
-
-                                        Navigator.pushReplacement(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) => ConnectServerPage(
-                                              _username,
-                                              server.servername,
-                                              server.url,
-                                              server.password,
-                                            ),
+                                      if (_username.isEmpty || _username.length > 16) return;
+                                      
+                                      Navigator.pushReplacement(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => ConnectServerPage(
+                                            _username,
+                                            server.servername,
+                                            server.url,
+                                            server.password,
                                           ),
-                                        );
-                                      }
+                                        ),
+                                      );
 
                                       _textController.clear();
                                     },
@@ -967,8 +953,7 @@ class _MyPublicServersPageState extends State<PublicServersPage> {
                 ),
             ],
           ),
-        )
-        : FutureBuilder<List<PublicServer>>(
+        ) : FutureBuilder<List<PublicServer>>(
           future: getPublicServers(),
           builder: (context, snapshot) {
             if (snapshot.hasData) {
@@ -1036,51 +1021,46 @@ class _MyPublicServersPageState extends State<PublicServersPage> {
                                     },
                                     child: AlertDialog(
                                       title: const Text('Enter your username'),
-                                      content: Form(
-                                        key: _formKey,
-                                        child: TextFormField(
-                                          controller: _textController,
-                                          autofocus: true,
-                                          decoration: InputDecoration(
-                                            filled: true,
-                                            fillColor: Theme.of(context).colorScheme.surface,
-                                            hintText: 'Username',
-                                            contentPadding: const EdgeInsets.all(16),
-                                            border: OutlineInputBorder(
-                                              borderRadius: BorderRadius.circular(16),
-                                              borderSide: const BorderSide(
-                                                width: 0,
-                                                style: BorderStyle.none,
-                                              ),
-                                            ),
-                                            enabledBorder: OutlineInputBorder(
-                                              borderRadius: BorderRadius.circular(16),
-                                              borderSide: BorderSide(
-                                                color: Theme.of(context).colorScheme.surfaceVariant,
-                                                width: 2,
-                                              ),
-                                            ),
-                                            focusedBorder: OutlineInputBorder(
-                                              borderRadius: BorderRadius.circular(16),
-                                              borderSide: BorderSide(
-                                                color: Theme.of(context).colorScheme.surfaceVariant,
-                                                width: 2,
-                                              ),
+                                      content: TextFormField(
+                                        controller: _textController,
+                                        autofocus: true,
+                                        decoration: InputDecoration(
+                                          filled: true,
+                                          fillColor: Theme.of(context).colorScheme.surface,
+                                          hintText: 'Username',
+                                          contentPadding: const EdgeInsets.all(16),
+                                          border: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(16),
+                                            borderSide: const BorderSide(width: 2),
+                                          ),
+                                          enabledBorder: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(16),
+                                            borderSide: BorderSide(
+                                              color: Theme.of(context).colorScheme.surfaceVariant,
+                                              width: 2,
                                             ),
                                           ),
-                                          validator: (value) {
-                                            if (value == null || value.isEmpty) {
-                                              return 'Please enter your username';
-                                            }
-
-                                            if (value.length > 16) {
-                                              return 'Username must be 16 characters max.';
-                                            }
-
-                                            return null;
-                                          },
-                                          onSaved: (value) => _username = value!,
+                                          focusedBorder: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(16),
+                                            borderSide: BorderSide(
+                                              color: Theme.of(context).colorScheme.surfaceVariant,
+                                              width: 2,
+                                            ),
+                                          ),
                                         ),
+                                        validator: (value) {
+                                          if (value == null || value.isEmpty) {
+                                            return 'Please enter your username';
+                                          }
+
+                                          if (value.length > 16) {
+                                            return 'Username must be 16 characters max.';
+                                          }
+
+                                          return null;
+                                        },
+                                        autovalidateMode: AutovalidateMode.onUserInteraction,
+                                        onSaved: (value) => _username = value!,    
                                       ),
                                       actions: [
                                         TextButton(
@@ -1093,21 +1073,19 @@ class _MyPublicServersPageState extends State<PublicServersPage> {
                                         ),
                                         TextButton(
                                           onPressed: () {
-                                            if (_formKey.currentState!.validate()) {
-                                              _formKey.currentState!.save();
+                                            if (_username.isEmpty || _username.length > 16) return;
 
-                                              Navigator.pushReplacement(
-                                                context,
-                                                MaterialPageRoute(
-                                                  builder: (context) => ConnectServerPage(
-                                                    _username,
-                                                    server.servername,
-                                                    server.url,
-                                                    server.password,
-                                                  ),
+                                            Navigator.pushReplacement(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) => ConnectServerPage(
+                                                  _username,
+                                                  server.servername,
+                                                  server.url,
+                                                  server.password,
                                                 ),
-                                              );
-                                            }
+                                              ),
+                                            );
 
                                             _textController.clear();
                                           },
@@ -1263,9 +1241,11 @@ class _MyAddPublicServerPageState extends State<MyAddPublicServerPage> {
                     if (value == null || value.isEmpty) {
                       return 'Please enter a server name';
                     }
+
                     if (value.length > 16) {
                       return 'Server name must be less than 16 characters';
                     }
+
                     return null;
                   },
                   onSaved: (value) => _servername = value!,
@@ -1303,6 +1283,7 @@ class _MyAddPublicServerPageState extends State<MyAddPublicServerPage> {
                     if (value == null || value.isEmpty) {
                       return 'Please enter a server URL';
                     }
+
                     return null;
                   },
                   onSaved: (value) => _url = value!,
@@ -1341,6 +1322,7 @@ class _MyAddPublicServerPageState extends State<MyAddPublicServerPage> {
                     if (value == null || value.isEmpty) {
                       return 'Please enter a password';
                     }
+
                     return null;
                   },
                   onSaved: (value) => _password = value!,
@@ -1355,11 +1337,7 @@ class _MyAddPublicServerPageState extends State<MyAddPublicServerPage> {
                       //   socket.write('{"op":"addServer","email":"$_email","servername":"$_servername","url":"$_url","password":"$_password"}');
                       //   socket.close();
                       // });
-                      
-                      
-                      // show a loading dialog
 
-                      // show a loading dialog
                       showDialog(
                         context: context,
                         builder: (context) => const AlertDialog(
