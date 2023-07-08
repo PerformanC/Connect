@@ -17,6 +17,7 @@
 */
 
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 
 import 'dart:io';
@@ -53,12 +54,21 @@ class HomePage extends StatelessWidget {
         ColorScheme.fromSwatch(primarySwatch: Colors.deepPurple, brightness: platformBrightness);
 
       return MaterialApp(
-        title: 'Connect App',
+        title: 'Connect',
         theme: ThemeData(
           colorScheme: systemTheme,
           useMaterial3: true,
         ),
         home: const MyHomePage(),
+        supportedLocales: const [
+          Locale('pt', 'BR'),
+          Locale('en'),
+        ],
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
       );
     });
   }
@@ -121,6 +131,15 @@ class AddPublicServerPage extends StatelessWidget {
   }
 }
 
+class SettingsPage extends StatelessWidget {
+  const SettingsPage({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return const MySettingsPage();
+  }
+}
+
 class MyHomePage extends StatefulWidget {
   const MyHomePage({Key? key}) : super(key: key);
 
@@ -175,7 +194,22 @@ class MyAddPublicServerPage extends StatefulWidget {
   State<MyAddPublicServerPage> createState() => _MyAddPublicServerPageState();
 }
 
+class MySettingsPage extends StatefulWidget {
+  const MySettingsPage({Key? key}) : super(key: key);
+
+  @override
+  State<MySettingsPage> createState() => _MySettingsPageState();
+}
+
 class _MyHomePageState extends State<MyHomePage> {
+  late Locale appLocale = Localizations.localeOf(context);
+
+  void didChangeLocales(List<Locale>? locale) {
+    setState(() {
+      appLocale = locale!.first;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -193,7 +227,7 @@ class _MyHomePageState extends State<MyHomePage> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Home page'),
+          title: Text(getTranslation('Home page', appLocale)),
           automaticallyImplyLeading: false,
         ),
         body: ListView(
@@ -239,26 +273,49 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
         bottomNavigationBar: BottomNavigationBar(
           currentIndex: 0,
-          items: const [
+          items: [
             BottomNavigationBarItem(
-              icon: Icon(Icons.home_rounded),
-              label: 'Home',
+              icon: const Icon(Icons.home_rounded),
+              label: getTranslation('Home', appLocale)
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.public_rounded),
-              label: 'Public servers',
+              icon: const Icon(Icons.public_rounded),
+              label: getTranslation('Public servers', appLocale),
             ),
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.settings_rounded),
+              label: getTranslation('Settings', appLocale),
+            )
           ],
           onTap: (index) {
-            if (index == 1) {
-              Navigator.push(
-                context,
-                PageRouteBuilder(
-                  pageBuilder: (context, animation1, animation2) => const PublicServerPage(),
-                  transitionDuration: Duration.zero,
-                  reverseTransitionDuration: Duration.zero,
-                ),
-              );
+            switch (index) {
+              case 0: {
+                break;
+              }
+              case 1: {
+                Navigator.push(
+                  context,
+                  PageRouteBuilder(
+                    pageBuilder: (context, animation1, animation2) => const PublicServerPage(),
+                    transitionDuration: Duration.zero,
+                    reverseTransitionDuration: Duration.zero,
+                  ),
+                );
+
+                break;
+              }
+              case 2: {
+                Navigator.push(
+                  context,
+                  PageRouteBuilder(
+                    pageBuilder: (context, animation1, animation2) => const SettingsPage(),
+                    transitionDuration: Duration.zero,
+                    reverseTransitionDuration: Duration.zero,
+                  ),
+                );
+
+                break;
+              }
             }
           },
         ),
@@ -268,17 +325,24 @@ class _MyHomePageState extends State<MyHomePage> {
 }
 
 class _MyAddServerPageState extends State<MyAddServerPage> {
+  late Locale appLocale = Localizations.localeOf(context);
   final _formKey = GlobalKey<FormState>();
   late String _name = '';
   late String _servername = '';
   late String _url = '';
   late String _password = '';
 
+  void didChangeLocales(List<Locale>? locale) {
+    setState(() {
+      appLocale = locale!.first;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add server'),
+        title: Text(getTranslation('Add server', appLocale)),
       ),
       body: Center(
         child: Padding(
@@ -292,14 +356,11 @@ class _MyAddServerPageState extends State<MyAddServerPage> {
                   decoration: InputDecoration(
                     filled: true,
                     fillColor: Theme.of(context).colorScheme.surface,
-                    hintText: 'Name',
+                    hintText: getTranslation('Username', appLocale),
                     contentPadding: const EdgeInsets.all(16),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
-                      borderSide: const BorderSide(
-                        width: 0,
-                        style: BorderStyle.none,
-                      ),
+                      borderSide: const BorderSide(width: 2),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
@@ -318,11 +379,11 @@ class _MyAddServerPageState extends State<MyAddServerPage> {
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter a name';
+                      return getTranslation('Please enter your username', appLocale);
                     }
 
                     if (value.length > 16) {
-                      return 'Name must be less than 16 characters';
+                      return getTranslation('It must be smaller than 16 characters', appLocale);
                     }
 
                     return null;
@@ -334,14 +395,11 @@ class _MyAddServerPageState extends State<MyAddServerPage> {
                   decoration: InputDecoration(
                     filled: true,
                     fillColor: Theme.of(context).colorScheme.surface,
-                    hintText: 'Server name',
+                    hintText: getTranslation('Server name', appLocale),
                     contentPadding: const EdgeInsets.all(16),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
-                      borderSide: const BorderSide(
-                        width: 0,
-                        style: BorderStyle.none,
-                      ),
+                      borderSide: const BorderSide(width: 2),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
@@ -360,11 +418,11 @@ class _MyAddServerPageState extends State<MyAddServerPage> {
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter a server name';
+                      return getTranslation('Please enter a server name', appLocale);
                     }
 
                     if (value.length > 16) {
-                      return 'Server name must be less than 16 characters';
+                      return getTranslation('Server name must be smaller than 16 characters', appLocale);
                     }
 
                     return null;
@@ -376,14 +434,11 @@ class _MyAddServerPageState extends State<MyAddServerPage> {
                   decoration: InputDecoration(
                     filled: true,
                     fillColor: Theme.of(context).colorScheme.surface,
-                    hintText: 'Server URL',
+                    hintText: getTranslation('Server URL', appLocale),
                     contentPadding: const EdgeInsets.all(16),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
-                      borderSide: const BorderSide(
-                        width: 0,
-                        style: BorderStyle.none,
-                      ),
+                      borderSide: const BorderSide(width: 2),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
@@ -402,7 +457,11 @@ class _MyAddServerPageState extends State<MyAddServerPage> {
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter a server URL';
+                      return getTranslation('Please enter a server URL', appLocale);
+                    }
+
+                    if (!isValidUrl(value)) {
+                      return getTranslation('Please enter a valid URL', appLocale);
                     }
 
                     return null;
@@ -414,14 +473,11 @@ class _MyAddServerPageState extends State<MyAddServerPage> {
                   decoration: InputDecoration(
                     filled: true,
                     fillColor: Theme.of(context).colorScheme.surface,
-                    hintText: 'Password',
+                    hintText: getTranslation('Password', appLocale),
                     contentPadding: const EdgeInsets.all(16),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
-                      borderSide: const BorderSide(
-                        width: 0,
-                        style: BorderStyle.none,
-                      ),
+                      borderSide: const BorderSide(width: 2),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
@@ -441,7 +497,7 @@ class _MyAddServerPageState extends State<MyAddServerPage> {
                   obscureText: true,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter a password';
+                      return getTranslation('Please enter a password', appLocale);
                     }
 
                     return null;
@@ -479,6 +535,14 @@ class _MyAddServerPageState extends State<MyAddServerPage> {
 }
 
 class _MyConnectServerPageState extends State<MyConnectServerPage> {
+  late Locale appLocale = Localizations.localeOf(context);
+
+  void didChangeLocales(List<Locale>? locale) {
+    setState(() {
+      appLocale = locale!.first;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -534,14 +598,14 @@ class _MyConnectServerPageState extends State<MyConnectServerPage> {
                     return false;
                   },
                   child: AlertDialog(
-                    title: const Text('Error'),
-                    content: const Text('Incorrect password.'),
+                    title: Text(getTranslation('Error', appLocale)),
+                    content: Text(getTranslation('Incorrect password.', appLocale)),
                     actions: [
                       TextButton(
                         onPressed: () {
                           Navigator.of(dialogContext)..pop()..pop();
                         },
-                        child: const Text('OK'),
+                        child: Text(getTranslation('OK', appLocale)),
                       ),
                     ],
                   ),
@@ -562,14 +626,14 @@ class _MyConnectServerPageState extends State<MyConnectServerPage> {
               return true;
             },
             child: AlertDialog(
-              title: const Text('Error'),
+              title: Text(getTranslation('Error', appLocale)),
               content: Text(error.toString()),
               actions: [
                 TextButton(
                   onPressed: () {
                     Navigator.of(dialogContext)..pop()..pop();
                   },
-                  child: const Text('OK'),
+                  child: Text(getTranslation('OK', appLocale)),
                 ),
               ],
             ),
@@ -584,15 +648,15 @@ class _MyConnectServerPageState extends State<MyConnectServerPage> {
     return Center(
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Connecting to server'),
+          title: Text(getTranslation('Connecting to server', appLocale)),
         ),
-        body: const Center(
+        body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              CircularProgressIndicator(),
-              SizedBox(height: 16),
-              Text('Connecting to server...'),
+              const CircularProgressIndicator(),
+              const SizedBox(height: 16),
+              Text(getTranslation('Connecting to server...', appLocale)),
             ],
           ),
         ),
@@ -602,10 +666,16 @@ class _MyConnectServerPageState extends State<MyConnectServerPage> {
 }
 
 class _MyChatPageState extends State<MyChatPage> {
+  late Locale appLocale = Localizations.localeOf(context);
   final _textController = TextEditingController();
   final _scrollController = ScrollController();
-
   final List<MessageList> _messages = [];
+
+  void didChangeLocales(List<Locale>? locale) {
+    setState(() {
+      appLocale = locale!.first;
+    });
+  }
 
   @override
   void dispose() {
@@ -647,8 +717,8 @@ class _MyChatPageState extends State<MyChatPage> {
 
             setState(() {
               _addMessage(MessageList(
-                msg: '${userJoin.username} joined the chat.',
-                author: 'Server\'s system',
+                msg: '${userJoin.username} ${getTranslation('joined the chat.', appLocale)}',
+                author: getTranslation('Server\'s system', appLocale),
                 authorId: -1,
               ));
             });
@@ -659,8 +729,8 @@ class _MyChatPageState extends State<MyChatPage> {
 
             setState(() {
               _addMessage(MessageList(
-                msg: '${userLeave.username} left the chat.',
-                author: 'Server\'s system',
+                msg: '${userLeave.username} ${getTranslation('left the chat.', appLocale)}',
+                author: getTranslation('Server\'s system', appLocale),
                 authorId: -1,
               ));
             });
@@ -739,9 +809,9 @@ class _MyChatPageState extends State<MyChatPage> {
                                 color: Theme.of(context).colorScheme.primaryContainer,
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              child: const Text(
-                                'SYSTEM',
-                                style: TextStyle(
+                              child: Text(
+                                getTranslation('SYSTEM', appLocale),
+                                style: const TextStyle(
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -777,14 +847,11 @@ class _MyChatPageState extends State<MyChatPage> {
                       decoration: InputDecoration(
                         filled: true,
                         fillColor: Theme.of(context).colorScheme.surface,
-                        hintText: 'Enter a message',
+                        hintText: getTranslation('Type a message', appLocale),
                         contentPadding: const EdgeInsets.all(16),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16),
-                          borderSide: const BorderSide(
-                            width: 0,
-                            style: BorderStyle.none,
-                          ),
+                          borderSide: const BorderSide(width: 2),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16),
@@ -818,8 +885,15 @@ class _MyChatPageState extends State<MyChatPage> {
 }
 
 class _MyPublicServersPageState extends State<PublicServersPage> {
+  late Locale appLocale = Localizations.localeOf(context);
   final _textController = TextEditingController();
   late String _username = '';
+
+  void didChangeLocales(List<Locale>? locale) {
+    setState(() {
+      appLocale = locale!.first;
+    });
+  }
 
   @override
   void dispose() {
@@ -833,11 +907,20 @@ class _MyPublicServersPageState extends State<PublicServersPage> {
       onPanUpdate: (dis) {
         if (dis.delta.dx > 0) {
           Navigator.pop(context);
+        } else if (dis.delta.dx < 0) {
+          Navigator.pushReplacement(
+            context,
+            PageRouteBuilder(
+              pageBuilder: (context, animation1, animation2) => const SettingsPage(),
+              transitionDuration: Duration.zero,
+              reverseTransitionDuration: Duration.zero,
+            ),
+          );
         }
       },
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Public servers'),
+          title: Text(getTranslation('Public servers', appLocale)),
           automaticallyImplyLeading: false,
         ),
         body: publicServers.isNotEmpty ? RefreshIndicator(
@@ -871,14 +954,14 @@ class _MyPublicServersPageState extends State<PublicServersPage> {
                                 return true;
                               },
                               child: AlertDialog(
-                                title: const Text('Enter your username'),
+                                title: Text(getTranslation('Enter your username', appLocale)),
                                 content: TextFormField(
                                   controller: _textController,
                                   autofocus: true,
                                   decoration: InputDecoration(
                                     filled: true,
                                     fillColor: Theme.of(context).colorScheme.surface,
-                                    hintText: 'Username',
+                                    hintText: getTranslation('Username', appLocale),
                                     contentPadding: const EdgeInsets.all(16),
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(16),
@@ -901,11 +984,11 @@ class _MyPublicServersPageState extends State<PublicServersPage> {
                                   ),
                                   validator: (value) {
                                     if (value == null || value.isEmpty) {
-                                      return 'Please enter your username';
+                                      return getTranslation('Please enter your username', appLocale);
                                     }
 
                                     if (value.length > 16) {
-                                      return 'Username must be 16 characters max.';
+                                      return getTranslation('It must be smaller than 16 characters', appLocale);
                                     }
 
                                     return null;
@@ -920,7 +1003,7 @@ class _MyPublicServersPageState extends State<PublicServersPage> {
 
                                       _textController.clear();
                                     },
-                                    child: const Text('Cancel'),
+                                    child: Text(getTranslation('Cancel', appLocale)),
                                   ),
                                   TextButton(
                                     onPressed: () {
@@ -940,7 +1023,7 @@ class _MyPublicServersPageState extends State<PublicServersPage> {
 
                                       _textController.clear();
                                     },
-                                    child: const Text('Connect'),
+                                    child: Text(getTranslation('Connect', appLocale)),
                                   ),
                                 ],
                               ),
@@ -975,10 +1058,10 @@ class _MyPublicServersPageState extends State<PublicServersPage> {
                         constraints: BoxConstraints(
                           minHeight: constraints.maxHeight,
                         ),
-                        child: const Center(
+                        child: Center(
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
-                            children: [ Text('No public servers found') ],
+                            children: [ Text(getTranslation('No public servers was found', appLocale)) ],
                           ),
                         ),
                       ),
@@ -1020,14 +1103,14 @@ class _MyPublicServersPageState extends State<PublicServersPage> {
                                       return true;
                                     },
                                     child: AlertDialog(
-                                      title: const Text('Enter your username'),
+                                      title: Text(getTranslation('Enter your username', appLocale)),
                                       content: TextFormField(
                                         controller: _textController,
                                         autofocus: true,
                                         decoration: InputDecoration(
                                           filled: true,
                                           fillColor: Theme.of(context).colorScheme.surface,
-                                          hintText: 'Username',
+                                          hintText: getTranslation('Username', appLocale),
                                           contentPadding: const EdgeInsets.all(16),
                                           border: OutlineInputBorder(
                                             borderRadius: BorderRadius.circular(16),
@@ -1050,11 +1133,11 @@ class _MyPublicServersPageState extends State<PublicServersPage> {
                                         ),
                                         validator: (value) {
                                           if (value == null || value.isEmpty) {
-                                            return 'Please enter your username';
+                                            return getTranslation('Please enter your username', appLocale);
                                           }
 
                                           if (value.length > 16) {
-                                            return 'Username must be 16 characters max.';
+                                            return getTranslation('It must be smaller than 16 characters', appLocale);
                                           }
 
                                           return null;
@@ -1125,19 +1208,42 @@ class _MyPublicServersPageState extends State<PublicServersPage> {
         ),
         bottomNavigationBar: BottomNavigationBar(
           currentIndex: 1,
-          items: const [
+          items: [
             BottomNavigationBarItem(
-              icon: Icon(Icons.home_rounded),
-              label: 'Home',
+              icon: const Icon(Icons.home_rounded),
+              label: getTranslation('Home', appLocale),
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.public_rounded),
-              label: 'Public servers',
+              icon: const Icon(Icons.public_rounded),
+              label: getTranslation('Public servers', appLocale),
+            ),
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.settings_rounded),
+              label: getTranslation('Settings', appLocale),
             ),
           ],
           onTap: (index) {
-            if (index == 0) {
-              Navigator.pop(context);
+            switch (index) {
+              case 0: {
+                Navigator.pop(context);
+
+                break;
+              }
+              case 1: {
+                break;
+              }
+              case 2: {
+                Navigator.pushReplacement(
+                  context,
+                  PageRouteBuilder(
+                    pageBuilder: (context, animation1, animation2) => const SettingsPage(),
+                    transitionDuration: Duration.zero,
+                    reverseTransitionDuration: Duration.zero,
+                  ),
+                );
+
+                break;
+              }
             }
           },
         ),
@@ -1147,17 +1253,24 @@ class _MyPublicServersPageState extends State<PublicServersPage> {
 }
 
 class _MyAddPublicServerPageState extends State<MyAddPublicServerPage> {
+  late Locale appLocale = Localizations.localeOf(context);
   final _formKey = GlobalKey<FormState>();
   late String _email = '';
   late String _servername = '';
   late String _url = '';
   late String _password = '';
 
+  void didChangeLocales(List<Locale>? locale) {
+    setState(() {
+      appLocale = locale!.first;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add public server'),
+        title: Text(getTranslation('Add public server', appLocale)),
       ),
       body: Center(
         child: Padding(
@@ -1171,14 +1284,11 @@ class _MyAddPublicServerPageState extends State<MyAddPublicServerPage> {
                   decoration: InputDecoration(
                     filled: true,
                     fillColor: Theme.of(context).colorScheme.surface,
-                    hintText: 'Email',
+                    hintText: getTranslation('Email', appLocale),
                     contentPadding: const EdgeInsets.all(16),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
-                      borderSide: const BorderSide(
-                        width: 0,
-                        style: BorderStyle.none,
-                      ),
+                      borderSide: const BorderSide(width: 2),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
@@ -1197,11 +1307,11 @@ class _MyAddPublicServerPageState extends State<MyAddPublicServerPage> {
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter your email';
+                      return getTranslation('Please enter your email', appLocale);
                     }
 
                     if (!value.contains('@')) {
-                      return 'Please enter a valid email';
+                      return getTranslation('Please enter a valid email', appLocale);
                     }
 
                     return null;
@@ -1213,14 +1323,11 @@ class _MyAddPublicServerPageState extends State<MyAddPublicServerPage> {
                   decoration: InputDecoration(
                     filled: true,
                     fillColor: Theme.of(context).colorScheme.surface,
-                    hintText: 'Server name',
+                    hintText: getTranslation('Server name', appLocale),
                     contentPadding: const EdgeInsets.all(16),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
-                      borderSide: const BorderSide(
-                        width: 0,
-                        style: BorderStyle.none,
-                      ),
+                      borderSide: const BorderSide(width: 2),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
@@ -1239,11 +1346,11 @@ class _MyAddPublicServerPageState extends State<MyAddPublicServerPage> {
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter a server name';
+                      return getTranslation('Please enter a server name', appLocale);
                     }
 
                     if (value.length > 16) {
-                      return 'Server name must be less than 16 characters';
+                      return getTranslation('Server name must be smaller than 16 characters', appLocale);
                     }
 
                     return null;
@@ -1255,14 +1362,11 @@ class _MyAddPublicServerPageState extends State<MyAddPublicServerPage> {
                   decoration: InputDecoration(
                     filled: true,
                     fillColor: Theme.of(context).colorScheme.surface,
-                    hintText: 'Server URL',
+                    hintText: getTranslation('Server URL', appLocale),
                     contentPadding: const EdgeInsets.all(16),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
-                      borderSide: const BorderSide(
-                        width: 0,
-                        style: BorderStyle.none,
-                      ),
+                      borderSide: const BorderSide(width: 2),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
@@ -1281,7 +1385,7 @@ class _MyAddPublicServerPageState extends State<MyAddPublicServerPage> {
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter a server URL';
+                      return getTranslation('Please enter a server URL', appLocale);
                     }
 
                     return null;
@@ -1293,14 +1397,11 @@ class _MyAddPublicServerPageState extends State<MyAddPublicServerPage> {
                   decoration: InputDecoration(
                     filled: true,
                     fillColor: Theme.of(context).colorScheme.surface,
-                    hintText: 'Password',
+                    hintText: getTranslation('Password', appLocale),
                     contentPadding: const EdgeInsets.all(16),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
-                      borderSide: const BorderSide(
-                        width: 0,
-                        style: BorderStyle.none,
-                      ),
+                      borderSide: const BorderSide(width: 2),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
@@ -1320,7 +1421,7 @@ class _MyAddPublicServerPageState extends State<MyAddPublicServerPage> {
                   obscureText: true,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter a password';
+                      return getTranslation('Please enter a password', appLocale);
                     }
 
                     return null;
@@ -1340,9 +1441,9 @@ class _MyAddPublicServerPageState extends State<MyAddPublicServerPage> {
 
                       showDialog(
                         context: context,
-                        builder: (context) => const AlertDialog(
-                          title: Text('Adding server...'),
-                          content: LinearProgressIndicator(),
+                        builder: (context) => AlertDialog(
+                          title: Text(getTranslation('Adding server...', appLocale)),
+                          content: const LinearProgressIndicator(),
                         ),
                       );
 
@@ -1360,6 +1461,92 @@ class _MyAddPublicServerPageState extends State<MyAddPublicServerPage> {
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _MySettingsPageState extends State<MySettingsPage> {
+  late Locale appLocale = Localizations.localeOf(context);
+
+  void didChangeLocales(List<Locale>? locale) {
+    setState(() {
+      appLocale = locale!.first;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onPanUpdate: (dis) {
+        if (dis.delta.dx > 0) {
+          Navigator.pushReplacement(
+            context,
+            PageRouteBuilder(
+              pageBuilder: (context, animation1, animation2) => const PublicServerPage(),
+              transitionDuration: Duration.zero,
+              reverseTransitionDuration: Duration.zero,
+            ),
+          );
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(getTranslation('Settings', appLocale)),
+          automaticallyImplyLeading: false,
+        ),
+        body: const Center(
+          child: Padding(
+            padding: EdgeInsets.all(16),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text('...')
+              ],
+            ),
+          ),
+        ),
+        bottomNavigationBar: BottomNavigationBar(
+          currentIndex: 2,
+          items: [
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.home_rounded),
+              label: getTranslation('Home', appLocale),
+            ),
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.public_rounded),
+              label: getTranslation('Public Servers', appLocale),
+            ),
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.settings_rounded),
+              label: getTranslation('Settings', appLocale),
+            )
+          ],
+          onTap: (index) {
+            switch (index) {
+              case 0: {
+                Navigator.pop(context);
+
+                break;
+              }
+              case 1: {
+                Navigator.pushReplacement(
+                  context,
+                  PageRouteBuilder(
+                    pageBuilder: (context, animation1, animation2) => const PublicServerPage(),
+                    transitionDuration: Duration.zero,
+                    reverseTransitionDuration: Duration.zero,
+                  ),
+                );
+
+                break;
+              }
+              case 2: {
+                break;
+              }
+            }
+          },
         ),
       ),
     );

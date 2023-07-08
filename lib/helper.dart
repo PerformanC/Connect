@@ -16,6 +16,8 @@
   and its developers disclaim all liability for any harm it (The Software) may cause.
 */
 
+import 'package:flutter/material.dart';
+
 import 'dart:convert';
 import 'dart:async';
 import 'dart:io';
@@ -325,4 +327,90 @@ try {
   }
 
   return completer.future;
+}
+
+String getTranslation(String string, Locale locale) {
+  switch ('${locale.languageCode}_${locale.countryCode}') {
+    case 'pt_BR': {
+      switch (string) {
+        /* Home page */
+          case 'Home page': return 'Página inicial';
+          case 'Home': return 'Início';
+          case 'Public servers': return 'Servidores públicos';
+          case 'Settings': return 'Configurações';
+        /* Home page */
+
+        /* Add server page */
+          case 'Add server': return 'Adicionar servidor';
+          case 'Username': return 'Nome de usuário';
+          /* Errors */
+            case 'Please enter your username': return 'Por favor, insira seu nome de usuário';
+            case 'It must be smaller than 16 characters': return 'Ele deve ter menos de 16 caracteres';
+          /* Errors */
+          case 'Server name': return 'Nome do servidor';
+          /* Errors */
+            case 'Please enter a server name': return 'Por favor, insira um nome de servidor';
+            case 'Server name must be be smaller than 16 characters': return 'O nome do servidor deve ter menos de 16 caracteres';
+          /* Errors */
+          case 'Server URL': return 'URL do servidor';
+          /* Errors */
+            case 'Please enter a server URL': return 'Por favor, insira uma URL de servidor';
+            case 'Please enter a valid URL': return 'Por favor, insira uma URL válida';
+          /* Errors */
+          case 'Password': return 'Senha';
+          /* Errors */
+            case 'Please enter a password': return 'Por favor, insira uma senha';
+          /* Errors */
+        /* Add server page */
+
+        /* Connecting page */
+          case 'Connecting to server': return 'Conectando ao servidor';
+          case 'Connecting to server...': return 'Conectando ao servidor...';
+          /* Errors */
+            case 'Error': return 'Erro';
+            case 'Invalid password.': return 'Senha inválida.';
+            case 'OK': return 'Entendido';
+          /* Errors */
+        /* Connecting page */
+
+        /* Chat page */
+          case 'SYSTEM': return 'SISTEMA';
+          case 'Type a message': return 'Digite uma mensagem';
+          case 'joined the chat.': return 'entrou no chat.';
+          case 'left the chat.': return 'saiu do chat.';
+          case 'Server\'s system': return 'Sistema do servidor';
+        /* Chat page */
+
+        /* Public servers page */
+          // case 'Public servers': return 'Servidores públicos'; // Already translated (in Home page)
+          // case 'Username': return 'Nome de usuário'; // Already translated (in Add server page)
+          /* Errors */
+            // case 'Please enter your username': return 'Por favor, insira seu nome de usuário'; // Already translated (in Add server page)
+            // case 'It must be smaller than 16 characters': return 'Ele deve ter menos de 16 caracteres'; // Already translated (in Add server page)
+            case 'No public servers was found': return 'Nenhum servidor público foi encontrado';
+          /* Errors */
+          case 'Cancel': return 'Cancelar';
+          case 'Connect': return 'Conectar-se';
+        /* Public servers page */
+
+        /* Add public server page */
+          case 'Add public server': return 'Adicionar servidor público';
+          case 'Email': return 'Email';
+          /* Errors */
+            case 'Please enter your email': return 'Por favor, insira seu email';
+            case 'Please enter a valid email': return 'Por favor, insira um email válido';
+
+            // The following errors are already translated (in Add server page)
+          /* Errors */
+          case 'Adding server...': return 'Adicionando servidor...';
+
+
+
+
+        default: return string;
+      }
+    }
+    case 'en': return string;
+    default: return string;
+  }
 }

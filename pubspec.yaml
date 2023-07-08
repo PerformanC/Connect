@@ -31,6 +31,9 @@ dependencies:
   flutter:
     sdk: flutter
 
+  flutter_localizations:
+    sdk: flutter
+
   dynamic_color: ^1.6.5
 
 dependencies_override:
