@@ -28,10 +28,6 @@ import 'helper.dart';
 List<Server> servers = [];
 List<PublicServer> publicServers = [];
 
-List<Server> getServerCached() {
-  return servers;
-}
-
 void main() async {
   servers = await getServers();
 
@@ -52,9 +48,9 @@ class HomePage extends StatelessWidget {
 
       final platformBrightness = MediaQuery.of(context).platformBrightness;
       final systemTheme = (platformBrightness == Brightness.light
-              ? lightColorScheme
-              : darkColorScheme) ??
-          ColorScheme.fromSwatch(primarySwatch: Colors.deepPurple, brightness: platformBrightness);
+          ? lightColorScheme
+          : darkColorScheme) ??
+        ColorScheme.fromSwatch(primarySwatch: Colors.deepPurple, brightness: platformBrightness);
 
       return MaterialApp(
         title: 'Connect App',
@@ -107,6 +103,15 @@ class ChatPage extends StatelessWidget {
   }
 }
 
+class PublicServerPage extends StatelessWidget {
+  const PublicServerPage({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return const PublicServersPage();
+  }
+}
+
 class AddPublicServerPage extends StatelessWidget {
   const AddPublicServerPage({Key? key}) : super(key: key);
 
@@ -156,6 +161,13 @@ class MyChatPage extends StatefulWidget {
   State<MyChatPage> createState() => _MyChatPageState();
 }
 
+class PublicServersPage extends StatefulWidget {
+  const PublicServersPage({Key? key}) : super(key: key);
+
+  @override
+  State<PublicServersPage> createState() => _MyPublicServersPageState();
+}
+
 class MyAddPublicServerPage extends StatefulWidget {
   const MyAddPublicServerPage({Key? key}) : super(key: key);
 
@@ -163,428 +175,70 @@ class MyAddPublicServerPage extends StatefulWidget {
   State<MyAddPublicServerPage> createState() => _MyAddPublicServerPageState();
 }
 
-class HomePageBody extends StatelessWidget {
-  const HomePageBody({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    if (servers.isEmpty) {
-      return const Center(
-        child: Text('No servers.. that\'s sad'),
-      );
-    }
-
-    return ListView(
-      children: [
-        for (var server in servers)
-          Card(
-            child: ListTile(
-              title: Text(server.servername),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              trailing: IconButton(
-                icon: const Icon(Icons.connect_without_contact_rounded),
-                alignment: Alignment.centerRight,
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ConnectServerPage(
-                        server.username,
-                        server.servername,
-                        server.url,
-                        server.password,
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-          ),
-      ],
-    );
-  }
-}
-
-class AddPublicServerBody extends StatelessWidget {
-  final _formKey = GlobalKey<FormState>();
-  final _textController = TextEditingController();
-  
-
-  AddPublicServerBody({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    late String username = '';
-
-    return publicServers.isNotEmpty ? RefreshIndicator(
-      onRefresh: () async {
-        return getPublicServers().then((updatedServers) {
-          publicServers = updatedServers;
-
-          (context as Element).markNeedsBuild();
-        });
-      },
-      child: ListView(
-        children: [
-          for (var server in publicServers)
-            Card(
-              child: ListTile(
-                title: Text(server.servername),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                trailing: IconButton(
-                  icon: const Icon(Icons.connect_without_contact_rounded),
-                  alignment: Alignment.centerRight,
-                  onPressed: () {
-                    showDialog(
-                      context: context,
-                      builder: (context) {
-                        return WillPopScope(
-                          onWillPop: () async {
-                            _textController.clear();
-
-                            return true;
-                          },
-                          child: AlertDialog(
-                            title: const Text('Enter your username'),
-                            content: Form(
-                              key: _formKey,
-                              child: TextFormField(
-                                controller: _textController,
-                                autofocus: true,
-                                decoration: InputDecoration(
-                                  filled: true,
-                                  fillColor: Theme.of(context).colorScheme.surface,
-                                  hintText: 'Username',
-                                  contentPadding: const EdgeInsets.all(16),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(16),
-                                    borderSide: const BorderSide(
-                                      width: 0,
-                                      style: BorderStyle.none,
-                                    ),
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(16),
-                                    borderSide: BorderSide(
-                                      color: Theme.of(context).colorScheme.surfaceVariant,
-                                      width: 2,
-                                    ),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(16),
-                                    borderSide: BorderSide(
-                                      color: Theme.of(context).colorScheme.surfaceVariant,
-                                      width: 2,
-                                    ),
-                                  ),
-                                ),
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Please enter your username';
-                                  }
-
-                                  if (value.length > 16) {
-                                    return 'Username must be 16 characters max.';
-                                  }
-
-                                  return null;
-                                },
-                                onSaved: (value) => username = value!,
-                              ),
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.pop(context);
-
-                                  _textController.clear();
-                                },
-                                child: const Text('Cancel'),
-                              ),
-                              TextButton(
-                                onPressed: () {
-                                  if (_formKey.currentState!.validate()) {
-                                    _formKey.currentState!.save();
-
-                                    Navigator.pushReplacement(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => ConnectServerPage(
-                                          username,
-                                          server.servername,
-                                          server.url,
-                                          server.password,
-                                        ),
-                                      ),
-                                    );
-                                  }
-
-                                  _textController.clear();
-                                },
-                                child: const Text('Connect'),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    );
-                  },
-                ),
-              ),
-            ),
-        ],
-      ),
-    )
-    : FutureBuilder<List<PublicServer>>(
-      future: getPublicServers(),
-      builder: (context, snapshot) {
-        if (snapshot.hasData) {
-          final serversData = snapshot.data!;
-
-          if (serversData.isEmpty) {
-            return LayoutBuilder(
-              builder: (context, constraints) => RefreshIndicator(
-                onRefresh: () async {
-                  return getPublicServers().then((updatedServers) {
-                    publicServers = updatedServers;
-
-                    (context as Element).markNeedsBuild();
-                  });
-                },
-                child: SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      minHeight: constraints.maxHeight,
-                    ),
-                    child: const Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [ Text('No public servers found') ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            );
-          }
-
-          publicServers = serversData;
-
-          return RefreshIndicator(
-            onRefresh: () async {
-              return getPublicServers().then((updatedServers) {
-                publicServers = updatedServers;
-
-                (context as Element).markNeedsBuild();
-              });
-            },
-            child: ListView(
-              children: [
-                for (var server in serversData)
-                  Card(
-                    child: ListTile(
-                      title: Text(server.servername),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.connect_without_contact_rounded),
-                        alignment: Alignment.centerRight,
-                        onPressed: () {
-                          showDialog(
-                            context: context,
-                            builder: (context) {
-                              return WillPopScope(
-                                onWillPop: () async {
-                                  _textController.clear();
-
-                                  return true;
-                                },
-                                child: AlertDialog(
-                                  title: const Text('Enter your username'),
-                                  content: Form(
-                                    key: _formKey,
-                                    child: TextFormField(
-                                      controller: _textController,
-                                      autofocus: true,
-                                      decoration: InputDecoration(
-                                        filled: true,
-                                        fillColor: Theme.of(context).colorScheme.surface,
-                                        hintText: 'Username',
-                                        contentPadding: const EdgeInsets.all(16),
-                                        border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(16),
-                                          borderSide: const BorderSide(
-                                            width: 0,
-                                            style: BorderStyle.none,
-                                          ),
-                                        ),
-                                        enabledBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(16),
-                                          borderSide: BorderSide(
-                                            color: Theme.of(context).colorScheme.surfaceVariant,
-                                            width: 2,
-                                          ),
-                                        ),
-                                        focusedBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(16),
-                                          borderSide: BorderSide(
-                                            color: Theme.of(context).colorScheme.surfaceVariant,
-                                            width: 2,
-                                          ),
-                                        ),
-                                      ),
-                                      validator: (value) {
-                                        if (value == null || value.isEmpty) {
-                                          return 'Please enter your username';
-                                        }
-
-                                        if (value.length > 16) {
-                                          return 'Username must be 16 characters max.';
-                                        }
-
-                                        return null;
-                                      },
-                                      onSaved: (value) => username = value!,
-                                    ),
-                                  ),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () {
-                                        Navigator.pop(context);
-
-                                        _textController.clear();
-                                      },
-                                      child: const Text('Cancel'),
-                                    ),
-                                    TextButton(
-                                      onPressed: () {
-                                        if (_formKey.currentState!.validate()) {
-                                          _formKey.currentState!.save();
-
-                                          Navigator.pushReplacement(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) => ConnectServerPage(
-                                                username,
-                                                server.servername,
-                                                server.url,
-                                                server.password,
-                                              ),
-                                            ),
-                                          );
-                                        }
-
-                                        _textController.clear();
-                                      },
-                                      child: const Text('Connect'),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          );
-        } else if (snapshot.hasError) {
-          return Center(
-            child: Text(snapshot.error.toString()),
-          );
-        }
-
-        return const Center(
-          child: CircularProgressIndicator(),
-        );
-      },
-    );
-  }
-}
-
-class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateMixin {
-  int _currentIndex = 0;
-  final List _children = [
-    const HomePageBody(),
-    AddPublicServerBody(),
-  ];
-  late AnimationController _animationController;
-
-  @override
-  void initState() {
-    super.initState();
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 300),
-    );
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
-  }
-
+class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onPanUpdate: (dis) {
-        if (dis.delta.dx < 0 && _currentIndex == 0) {
-          setState(() {
-            _currentIndex = 1;
-          });
-        } else if (dis.delta.dx > 0 && _currentIndex == 1) {
-          setState(() {
-            _currentIndex = 0;
-          });
+        if (dis.delta.dx < 0) {
+          Navigator.push(
+            context,
+            PageRouteBuilder(
+              pageBuilder: (context, animation1, animation2) => const PublicServerPage(),
+              transitionDuration: Duration.zero,
+              reverseTransitionDuration: Duration.zero,
+            ),
+          );
         }
       },
       child: Scaffold(
         appBar: AppBar(
-          title: _currentIndex == 0 ? const Text('Home page') : const Text('Public servers'),
+          title: const Text('Home page'),
           automaticallyImplyLeading: false,
         ),
-        body: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 300),
-          transitionBuilder: (Widget child, Animation<double> animation) {
-            var begin = _currentIndex == 0 ? const Offset(-1.0, 0.0) : const Offset(1.0, 0.0);
-            var offsetAnimation = Tween(begin: begin, end: Offset.zero).animate(animation);
-
-            return SlideTransition(
-              position: offsetAnimation,
-              child: child,
-            );
-          },
-          child: _children[_currentIndex],
+        body: ListView(
+          children: [
+            for (var server in servers)
+              Card(
+                child: ListTile(
+                  title: Text(server.servername),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.connect_without_contact_rounded),
+                    alignment: Alignment.centerRight,
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ConnectServerPage(
+                            server.username,
+                            server.servername,
+                            server.url,
+                            server.password,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+          ],
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
-            if (_currentIndex == 0) {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const AddServerPage()),
-              ).then((_) {
-                setState(() {});
-              });
-            } else {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const AddPublicServerPage()),
-              );
-            }
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const AddServerPage()),
+            ).then((_) {
+              setState(() {});
+            });
           },
           child: const Icon(Icons.add_rounded),
         ),
         bottomNavigationBar: BottomNavigationBar(
-          currentIndex: _currentIndex,
+          currentIndex: 0,
           items: const [
             BottomNavigationBarItem(
               icon: Icon(Icons.home_rounded),
@@ -596,9 +250,16 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
             ),
           ],
           onTap: (index) {
-            setState(() {
-              _currentIndex = index;
-            });
+            if (index == 1) {
+              Navigator.push(
+                context,
+                PageRouteBuilder(
+                  pageBuilder: (context, animation1, animation2) => const PublicServerPage(),
+                  transitionDuration: Duration.zero,
+                  reverseTransitionDuration: Duration.zero,
+                ),
+              );
+            }
           },
         ),
       ),
@@ -606,19 +267,12 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
   }
 }
 
-
 class _MyAddServerPageState extends State<MyAddServerPage> {
   final _formKey = GlobalKey<FormState>();
   late String _name = '';
   late String _servername = '';
   late String _url = '';
   late String _password = '';
-
-  @override
-  void dispose() {
-    _formKey.currentState?.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -1024,11 +678,14 @@ class _MyChatPageState extends State<MyChatPage> {
 
   void _addMessage(MessageList message) {
     final messagesFinal = _messages.length - 1;
-    if (messagesFinal != -1 &&
-        _messages[messagesFinal].authorId == message.authorId) {
-      _messages[messagesFinal].msg += '\n${message.msg}';
+    if (messagesFinal != -1 && _messages[messagesFinal].authorId == message.authorId) {
+      setState(() {
+        _messages[messagesFinal].msg += '\n${message.msg}';
+      });
     } else {
-      _messages.add(message);
+      setState(() {
+        _messages.add(message);
+      });
     }
 
     if (_scrollController.position.pixels > _scrollController.position.maxScrollExtent - (MediaQuery.of(context).size.height / 2)) {
@@ -1161,6 +818,351 @@ class _MyChatPageState extends State<MyChatPage> {
             ],
           );
         },
+      ),
+    );
+  }
+}
+
+class _MyPublicServersPageState extends State<PublicServersPage> {
+  final _formKey = GlobalKey<FormState>();
+  final _textController = TextEditingController();
+  late String _username = '';
+
+  @override
+  void dispose() {
+    _textController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onPanUpdate: (dis) {
+        if (dis.delta.dx > 0) {
+          Navigator.pop(context);
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Public servers'),
+          automaticallyImplyLeading: false,
+        ),
+        body: publicServers.isNotEmpty ? RefreshIndicator(
+          onRefresh: () async {
+            return getPublicServers().then((updatedServers) {
+              setState(() {
+                publicServers = updatedServers;
+              });
+            });
+          },
+          child: ListView(
+            children: [
+              for (var server in publicServers)
+                Card(
+                  child: ListTile(
+                    title: Text(server.servername),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.connect_without_contact_rounded),
+                      alignment: Alignment.centerRight,
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) {
+                            return WillPopScope(
+                              onWillPop: () async {
+                                _textController.clear();
+
+                                return true;
+                              },
+                              child: AlertDialog(
+                                title: const Text('Enter your username'),
+                                content: Form(
+                                  key: _formKey,
+                                  child: TextFormField(
+                                    controller: _textController,
+                                    autofocus: true,
+                                    decoration: InputDecoration(
+                                      filled: true,
+                                      fillColor: Theme.of(context).colorScheme.surface,
+                                      hintText: 'Username',
+                                      contentPadding: const EdgeInsets.all(16),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(16),
+                                        borderSide: const BorderSide(
+                                          width: 0,
+                                          style: BorderStyle.none,
+                                        ),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(16),
+                                        borderSide: BorderSide(
+                                          color: Theme.of(context).colorScheme.surfaceVariant,
+                                          width: 2,
+                                        ),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(16),
+                                        borderSide: BorderSide(
+                                          color: Theme.of(context).colorScheme.surfaceVariant,
+                                          width: 2,
+                                        ),
+                                      ),
+                                    ),
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return 'Please enter your username';
+                                      }
+
+                                      if (value.length > 16) {
+                                        return 'Username must be 16 characters max.';
+                                      }
+
+                                      return null;
+                                    },
+                                    onSaved: (value) => _username = value!,
+                                  ),
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.pop(context);
+
+                                      _textController.clear();
+                                    },
+                                    child: const Text('Cancel'),
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      if (_formKey.currentState!.validate()) {
+                                        _formKey.currentState!.save();
+
+                                        Navigator.pushReplacement(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => ConnectServerPage(
+                                              _username,
+                                              server.servername,
+                                              server.url,
+                                              server.password,
+                                            ),
+                                          ),
+                                        );
+                                      }
+
+                                      _textController.clear();
+                                    },
+                                    child: const Text('Connect'),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        )
+        : FutureBuilder<List<PublicServer>>(
+          future: getPublicServers(),
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              final serversData = snapshot.data!;
+
+              if (serversData.isEmpty) {
+                return LayoutBuilder(
+                  builder: (context, constraints) => RefreshIndicator(
+                    onRefresh: () async {
+                      return getPublicServers().then((updatedServers) {
+                        setState(() {
+                          publicServers = updatedServers;
+                        });
+                      });
+                    },
+                    child: SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          minHeight: constraints.maxHeight,
+                        ),
+                        child: const Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [ Text('No public servers found') ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              }
+
+              publicServers = serversData;
+
+              return RefreshIndicator(
+                onRefresh: () async {
+                  return getPublicServers().then((updatedServers) {
+                    setState(() {
+                      publicServers = updatedServers;
+                    });
+                  });
+                },
+                child: ListView(
+                  children: [
+                    for (var server in serversData)
+                      Card(
+                        child: ListTile(
+                          title: Text(server.servername),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          trailing: IconButton(
+                            icon: const Icon(Icons.connect_without_contact_rounded),
+                            alignment: Alignment.centerRight,
+                            onPressed: () {
+                              showDialog(
+                                context: context,
+                                builder: (context) {
+                                  return WillPopScope(
+                                    onWillPop: () async {
+                                      _textController.clear();
+
+                                      return true;
+                                    },
+                                    child: AlertDialog(
+                                      title: const Text('Enter your username'),
+                                      content: Form(
+                                        key: _formKey,
+                                        child: TextFormField(
+                                          controller: _textController,
+                                          autofocus: true,
+                                          decoration: InputDecoration(
+                                            filled: true,
+                                            fillColor: Theme.of(context).colorScheme.surface,
+                                            hintText: 'Username',
+                                            contentPadding: const EdgeInsets.all(16),
+                                            border: OutlineInputBorder(
+                                              borderRadius: BorderRadius.circular(16),
+                                              borderSide: const BorderSide(
+                                                width: 0,
+                                                style: BorderStyle.none,
+                                              ),
+                                            ),
+                                            enabledBorder: OutlineInputBorder(
+                                              borderRadius: BorderRadius.circular(16),
+                                              borderSide: BorderSide(
+                                                color: Theme.of(context).colorScheme.surfaceVariant,
+                                                width: 2,
+                                              ),
+                                            ),
+                                            focusedBorder: OutlineInputBorder(
+                                              borderRadius: BorderRadius.circular(16),
+                                              borderSide: BorderSide(
+                                                color: Theme.of(context).colorScheme.surfaceVariant,
+                                                width: 2,
+                                              ),
+                                            ),
+                                          ),
+                                          validator: (value) {
+                                            if (value == null || value.isEmpty) {
+                                              return 'Please enter your username';
+                                            }
+
+                                            if (value.length > 16) {
+                                              return 'Username must be 16 characters max.';
+                                            }
+
+                                            return null;
+                                          },
+                                          onSaved: (value) => _username = value!,
+                                        ),
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () {
+                                            Navigator.pop(context);
+
+                                            _textController.clear();
+                                          },
+                                          child: const Text('Cancel'),
+                                        ),
+                                        TextButton(
+                                          onPressed: () {
+                                            if (_formKey.currentState!.validate()) {
+                                              _formKey.currentState!.save();
+
+                                              Navigator.pushReplacement(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (context) => ConnectServerPage(
+                                                    _username,
+                                                    server.servername,
+                                                    server.url,
+                                                    server.password,
+                                                  ),
+                                                ),
+                                              );
+                                            }
+
+                                            _textController.clear();
+                                          },
+                                          child: const Text('Connect'),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              );
+            } else if (snapshot.hasError) {
+              return Center(
+                child: Text(snapshot.error.toString()),
+              );
+            }
+
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          },
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const AddPublicServerPage()),
+            );
+          },
+          child: const Icon(Icons.add_rounded),
+        ),
+        bottomNavigationBar: BottomNavigationBar(
+          currentIndex: 1,
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home_rounded),
+              label: 'Home',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.public_rounded),
+              label: 'Public servers',
+            ),
+          ],
+          onTap: (index) {
+            if (index == 0) {
+              Navigator.pop(context);
+            }
+          },
+        ),
       ),
     );
   }
@@ -1354,6 +1356,9 @@ class _MyAddPublicServerPageState extends State<MyAddPublicServerPage> {
                       //   socket.close();
                       // });
                       
+                      
+                      // show a loading dialog
+
                       // show a loading dialog
                       showDialog(
                         context: context,
@@ -1363,14 +1368,12 @@ class _MyAddPublicServerPageState extends State<MyAddPublicServerPage> {
                         ),
                       );
 
-
                       HttpClient()
                         .getUrl(Uri.parse('https://the-main-server.performancorgan.repl.co/addServer?email=$_email&servername=$_servername&url=$_url&password=$_password'))
                         .then((request) {
                           request.close();
 
-                          Navigator.of(context).pop();
-                          Navigator.of(context).pop();
+                          Navigator.of(context)..pop()..pop();
                         });
                     }
                   },
