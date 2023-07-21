@@ -35,6 +35,7 @@ dependencies:
     sdk: flutter
 
   dynamic_color: ^1.6.5
+  image_picker: ^1.0.0
 
 dependencies_override:
   material_color_utilities: ^0.8.0

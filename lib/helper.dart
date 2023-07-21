@@ -18,9 +18,10 @@
 
 import 'package:flutter/material.dart';
 
+import 'dart:typed_data';
+import 'dart:io';
 import 'dart:convert';
 import 'dart:async';
-import 'dart:io';
 
 class Server {
   Server(
@@ -133,15 +134,17 @@ class Message {
 }
 
 class MessageList {
-  MessageList({required this.msg, required this.author, required this.authorId});
+  MessageList({this.img, this.msg, required this.author, required this.authorId});
 
-  String msg;
+  String? msg;
+  Uint8List? img;
   final String author;
   final int authorId;
 
   factory MessageList.fromJson(Map<String, dynamic> json) {
     return MessageList(
       msg: json['msg'] as String,
+      img: json['img'] as Uint8List,
       author: json['author'] as String,
       authorId: json['authorId'] as int,
     );
@@ -150,6 +153,7 @@ class MessageList {
   Map<String, dynamic> toJson() {
     return {
       'msg': msg,
+      'img': img,
       'author': author,
       'authorId': authorId,
     };
@@ -338,6 +342,10 @@ String getTranslation(String string, Locale locale) {
           case 'Home': return 'Início';
           case 'Public servers': return 'Servidores públicos';
           case 'Settings': return 'Configurações';
+
+          /* Errors */
+            case 'You don\'t have any servers yet': return 'Você ainda não tem nenhum servidor';
+          /* Errors */
         /* Home page */
 
         /* Add server page */

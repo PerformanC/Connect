@@ -19,7 +19,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:dynamic_color/dynamic_color.dart';
+import 'package:image_picker/image_picker.dart';
 
+import 'dart:typed_data';
 import 'dart:io';
 import 'dart:convert';
 import 'dart:async';
@@ -203,6 +205,15 @@ class MySettingsPage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   late Locale appLocale = Localizations.localeOf(context);
+  final _controller = PageController(initialPage: 0);
+  int currentIndex = 0;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+
+    super.dispose();
+  }
 
   void didChangeLocales(List<Locale>? locale) {
     setState(() {
@@ -212,113 +223,113 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onPanUpdate: (dis) {
-        if (dis.delta.dx < 0) {
-          Navigator.push(
-            context,
-            PageRouteBuilder(
-              pageBuilder: (context, animation1, animation2) => const PublicServerPage(),
-              transitionDuration: Duration.zero,
-              reverseTransitionDuration: Duration.zero,
-            ),
-          );
-        }
-      },
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(getTranslation('Home page', appLocale)),
-          automaticallyImplyLeading: false,
-        ),
-        body: ListView(
-          children: [
-            for (var server in servers)
-              Card(
-                child: ListTile(
-                  title: Text(server.servername),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.connect_without_contact_rounded),
-                    alignment: Alignment.centerRight,
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ConnectServerPage(
-                            server.username,
-                            server.servername,
-                            server.url,
-                            server.password,
+    return Scaffold(
+      appBar: AppBar(
+        title: currentIndex == 0 ? Text(getTranslation('Home page', appLocale)) : currentIndex == 1 ? Text(getTranslation('Public servers', appLocale)) : Text(getTranslation('Settings', appLocale)),
+        automaticallyImplyLeading: false,
+      ),
+      body: PageView(
+        controller: _controller,
+        onPageChanged: (index) {
+          setState(() {
+            currentIndex = index;
+          });
+        },
+        children: [
+          servers.isEmpty ? Center(
+            child: Text(getTranslation('You don\'t have any servers yet', appLocale)),
+           ) : ListView(
+            children: [
+              for (var server in servers)
+                Card(
+                  child: ListTile(
+                    title: Text(server.servername),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.connect_without_contact_rounded),
+                      alignment: Alignment.centerRight,
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ConnectServerPage(
+                              server.username,
+                              server.servername,
+                              server.url,
+                              server.password,
+                            ),
                           ),
-                        ),
-                      );
-                    },
+                        );
+                      },
+                    ),
                   ),
                 ),
-              ),
-          ],
-        ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const AddServerPage()),
-            ).then((_) {
-              setState(() {});
-            });
-          },
-          child: const Icon(Icons.add_rounded),
-        ),
-        bottomNavigationBar: BottomNavigationBar(
-          currentIndex: 0,
-          items: [
-            BottomNavigationBarItem(
-              icon: const Icon(Icons.home_rounded),
-              label: getTranslation('Home', appLocale)
-            ),
-            BottomNavigationBarItem(
-              icon: const Icon(Icons.public_rounded),
-              label: getTranslation('Public servers', appLocale),
-            ),
-            BottomNavigationBarItem(
-              icon: const Icon(Icons.settings_rounded),
-              label: getTranslation('Settings', appLocale),
-            )
-          ],
-          onTap: (index) {
-            switch (index) {
-              case 0: {
-                break;
-              }
-              case 1: {
-                Navigator.push(
-                  context,
-                  PageRouteBuilder(
-                    pageBuilder: (context, animation1, animation2) => const PublicServerPage(),
-                    transitionDuration: Duration.zero,
-                    reverseTransitionDuration: Duration.zero,
-                  ),
-                );
+            ],
+          ),
+          const PublicServersPage(),
+          const SettingsPage(),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const AddServerPage()),
+          ).then((_) {
+            setState(() {});
+          });
+        },
+        child: const Icon(Icons.add_rounded),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: currentIndex,
+        items: [
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.home_rounded),
+            label: getTranslation('Home', appLocale)
+          ),
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.public_rounded),
+            label: getTranslation('Public servers', appLocale),
+          ),
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.settings_rounded),
+            label: getTranslation('Settings', appLocale),
+          )
+        ],
+        onTap: (index) {
+          switch (index) {
+            case 0: {
+              _controller.animateToPage(
+                0,
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeOut,
+              );
 
-                break;
-              }
-              case 2: {
-                Navigator.push(
-                  context,
-                  PageRouteBuilder(
-                    pageBuilder: (context, animation1, animation2) => const SettingsPage(),
-                    transitionDuration: Duration.zero,
-                    reverseTransitionDuration: Duration.zero,
-                  ),
-                );
-
-                break;
-              }
+              break;
             }
-          },
-        ),
+            case 1: {
+              _controller.animateToPage(
+                1,
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeOut,
+              );
+
+              break;
+            }
+            case 2: {
+              _controller.animateToPage(
+                2,
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeOut,
+              );
+
+              break;
+            }
+          }
+        },
       ),
     );
   }
@@ -548,15 +559,17 @@ class _MyConnectServerPageState extends State<MyConnectServerPage> {
     super.initState();
 
     Socket.connect(widget.url, 8888).then((socket) {
-      socket.write("{\"op\":\"auth\",\"password\":\"${widget.password}\",\"username\":\"${widget.username}\"}");
+      socket.write('\i1\j${widget.password}\j${widget.username}\f');
 
       StreamController<List<int>> controller = StreamController<List<int>>.broadcast();
 
       socket.listen((data) {
         controller.add(data);
       }, onDone: () {
+        print('Connection closed because it is done');
         controller.close();
       }, onError: (error) {
+        print('Connection closed because of an error: $error');
         controller.close();
 
         Navigator.of(context)..pop()..pop();
@@ -564,12 +577,11 @@ class _MyConnectServerPageState extends State<MyConnectServerPage> {
 
       StreamSubscription<List<int>>? subscription;
 
-      subscription = controller.stream.listen((payload) {
-        final payloadString = utf8.decode(payload);
-        final data = AuthResponse.fromJson(jsonDecode(payloadString) as Map<String, dynamic>);
+      subscription = controller.stream.listen((data) {
+        final payload = utf8.decode(data);
 
-        if (data.op == 'auth') {
-          if (data.status == 'ok') {
+        if (payload[0] == '1') {
+          if (payload[2] == '1') {
             subscription?.cancel();
 
             Navigator.pushReplacement(
@@ -670,6 +682,7 @@ class _MyChatPageState extends State<MyChatPage> {
   final _textController = TextEditingController();
   final _scrollController = ScrollController();
   final List<MessageList> _messages = [];
+  late String _buffer = '';
 
   void didChangeLocales(List<Locale>? locale) {
     setState(() {
@@ -689,67 +702,103 @@ class _MyChatPageState extends State<MyChatPage> {
   void initState() {
     super.initState();
 
+    void processData(String data) {
+      if (data.isEmpty) {
+        return;
+      }
+
+      final parts = data.split('\j');
+
+      final type = parts[0];
+
+      switch (type) {
+        case '2': { /* userJoin */
+          String username = parts[1];
+     
+          setState(() {
+            _addMessage(MessageList(
+              msg: '$username ${getTranslation('joined the chat.', appLocale)}',
+              author: getTranslation('Server\'s system', appLocale),
+              authorId: -1,
+            ));
+          });
+          break;
+        }
+        case '3': { /* userLeave */
+          String username = parts[1];
+    
+          setState(() {
+            _addMessage(MessageList(
+              msg: '$username ${getTranslation('left the chat.', appLocale)}',
+              author: getTranslation('Server\'s system', appLocale),
+              authorId: -1,
+            ));
+          });
+          break;
+        }
+        case '4': { /* msg */
+          String msg = parts[1];
+          String author = parts[2];
+          int authorId = int.tryParse(parts[3]) as int;
+
+          setState(() {
+            _addMessage(MessageList(
+              msg: msg,
+              author: author,
+              authorId: authorId,
+            ));
+          });
+          break;
+        }
+        case '5': { /* image */
+          String author = parts[1];
+          int authorId = int.tryParse(parts[2]) as int;
+          Uint8List image = Uint8List.fromList(parts[3].codeUnits);
+ 
+          setState(() {
+            _addMessage(MessageList(
+              img: image,
+              author: author,
+              authorId: authorId,
+            ));
+          });
+          break;
+        }
+      }
+    }
+
     widget.controller.stream.listen((payload) {
       final payloadString = utf8.decode(payload);
-      final jsons = payloadString.split('\n');
-      final jsonsLength = jsons.length;
 
-      for (var i = 0; i < jsonsLength; i++) {
-        final data = jsonDecode(payloadString) as Map<String, dynamic>;
+      // print('payload: "$payloadString"');
 
-        final op = data['op'] as String;
+      _buffer += payloadString;
 
-        switch (op) {
-          case 'msg':
-            final message = Message.fromJson(data);
+      while (_buffer[_buffer.length - 1] == '\f') {
+        final index = _buffer.indexOf('\f');
+        final data = _buffer.substring(0, index);
+        _buffer = _buffer.substring(index + 1);
 
-            setState(() {
-              _addMessage(MessageList(
-                msg: message.msg,
-                author: message.author,
-                authorId: message.authorId,
-              ));
-            });
-
-            break;
-          case 'userJoin':
-            final userJoin = UserLog.fromJson(data);
-
-            setState(() {
-              _addMessage(MessageList(
-                msg: '${userJoin.username} ${getTranslation('joined the chat.', appLocale)}',
-                author: getTranslation('Server\'s system', appLocale),
-                authorId: -1,
-              ));
-            });
-
-            break;
-          case 'userLeave':
-            final userLeave = UserLog.fromJson(data);
-
-            setState(() {
-              _addMessage(MessageList(
-                msg: '${userLeave.username} ${getTranslation('left the chat.', appLocale)}',
-                author: getTranslation('Server\'s system', appLocale),
-                authorId: -1,
-              ));
-            });
-
-            break;
-        }
+        processData(data);
       }
     });
 
     _textController.addListener(() {
       setState(() {});
     });
+
   }
 
   void _addMessage(MessageList message) {
     final messagesFinal = _messages.length - 1;
-    if (messagesFinal != -1 && _messages[messagesFinal].authorId == message.authorId) {
+    if (messagesFinal != -1 && _messages[messagesFinal].authorId == message.authorId && message.msg != null) {
       setState(() {
-        _messages[messagesFinal].msg += '\n${message.msg}';
+        if (_messages[messagesFinal].msg != null) {
+          _messages[messagesFinal].msg = '${_messages[messagesFinal].msg!}\n${message.msg}';
+        }
+        else {
+          _messages[messagesFinal].msg = message.msg;
+        }
       });
     } else {
       setState(() {
@@ -769,7 +818,7 @@ class _MyChatPageState extends State<MyChatPage> {
   void _sendMessage() {
     if (_textController.text.isEmpty) return;
 
-    widget.socket.write("{\"op\":\"msg\",\"msg\":\"${_textController.text}\"}");
+    widget.socket.write("\i4\j${_textController.text}\f");
 
     _addMessage(MessageList(
       msg: _textController.text,
@@ -778,6 +827,24 @@ class _MyChatPageState extends State<MyChatPage> {
     ));
 
     _textController.clear();
+  }
+
+  void _sendImage() async {
+    final image = await ImagePicker().pickImage(source: ImageSource.gallery, requestFullMetadata: false);
+
+    if (image == null) return;
+
+    final bytes = await image.readAsBytes();
+
+    // print("bytes: $bytes");
+
+    widget.socket.write("\i5\j${bytes}\f");
+
+    _addMessage(MessageList(
+      img: bytes,
+      author: widget.username,
+      authorId: -2,
+    ));
   }
 
   @override
@@ -818,12 +885,19 @@ class _MyChatPageState extends State<MyChatPage> {
                             ),
                           ],
                         ),
-                        subtitle: Text(message.msg),
+                        subtitle: Text(message.msg as String),
                       );
                     } else {
+                      if (message.img != null) {
+                        return ListTile(
+                          title: Text(message.author),
+                          subtitle: Image.memory(message.img as Uint8List),
+                        );
+                      }
+
                       return ListTile(
                         title: Text(message.author),
-                        subtitle: Text(message.msg),
+                        subtitle: Text(message.msg as String),
                       );
                     }
                   },
@@ -834,8 +908,8 @@ class _MyChatPageState extends State<MyChatPage> {
                   Container(
                     margin: const EdgeInsets.all(10),
                     width: orientation == Orientation.portrait
-                        ? MediaQuery.of(context).size.width * 0.79
-                        : MediaQuery.of(context).size.width * 0.901,
+                        ? MediaQuery.of(context).size.width * 0.63
+                        : MediaQuery.of(context).size.width * 0.881,
                     height: orientation == Orientation.portrait
                         ? MediaQuery.of(context).size.height * 0.06
                         : MediaQuery.of(context).size.height * 0.135,
@@ -871,6 +945,11 @@ class _MyChatPageState extends State<MyChatPage> {
                     ),
                   ),
                   FloatingActionButton(
+                    onPressed: _sendImage,
+                    child: const Icon(Icons.image_rounded),
+                  ),
+                  const SizedBox(width: 10),
+                  FloatingActionButton(
                     onPressed: _textController.text.isEmpty ? null : _sendMessage,
                     child: const Icon(Icons.send_rounded),
                   ),
@@ -903,176 +982,128 @@ class _MyPublicServersPageState extends State<PublicServersPage> {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onPanUpdate: (dis) {
-        if (dis.delta.dx > 0) {
-          Navigator.pop(context);
-        } else if (dis.delta.dx < 0) {
-          Navigator.pushReplacement(
-            context,
-            PageRouteBuilder(
-              pageBuilder: (context, animation1, animation2) => const SettingsPage(),
-              transitionDuration: Duration.zero,
-              reverseTransitionDuration: Duration.zero,
-            ),
-          );
-        }
+    return publicServers.isNotEmpty ? RefreshIndicator(
+      onRefresh: () async {
+        return getPublicServers().then((updatedServers) {
+          setState(() {
+            publicServers = updatedServers;
+          });
+        });
       },
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(getTranslation('Public servers', appLocale)),
-          automaticallyImplyLeading: false,
-        ),
-        body: publicServers.isNotEmpty ? RefreshIndicator(
-          onRefresh: () async {
-            return getPublicServers().then((updatedServers) {
-              setState(() {
-                publicServers = updatedServers;
-              });
-            });
-          },
-          child: ListView(
-            children: [
-              for (var server in publicServers)
-                Card(
-                  child: ListTile(
-                    title: Text(server.servername),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.connect_without_contact_rounded),
-                      alignment: Alignment.centerRight,
-                      onPressed: () {
-                        showDialog(
-                          context: context,
-                          builder: (context) {
-                            return WillPopScope(
-                              onWillPop: () async {
-                                _textController.clear();
+      child: ListView(
+        children: [
+          for (var server in publicServers)
+            Card(
+              child: ListTile(
+                title: Text(server.servername),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                trailing: IconButton(
+                  icon: const Icon(Icons.connect_without_contact_rounded),
+                  alignment: Alignment.centerRight,
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) {
+                        return WillPopScope(
+                          onWillPop: () async {
+                            _textController.clear();
 
-                                return true;
-                              },
-                              child: AlertDialog(
-                                title: Text(getTranslation('Enter your username', appLocale)),
-                                content: TextFormField(
-                                  controller: _textController,
-                                  autofocus: true,
-                                  decoration: InputDecoration(
-                                    filled: true,
-                                    fillColor: Theme.of(context).colorScheme.surface,
-                                    hintText: getTranslation('Username', appLocale),
-                                    contentPadding: const EdgeInsets.all(16),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(16),
-                                      borderSide: const BorderSide(width: 2),
-                                    ),
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(16),
-                                      borderSide: BorderSide(
-                                        color: Theme.of(context).colorScheme.surfaceVariant,
-                                        width: 2,
-                                      ),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(16),
-                                      borderSide: BorderSide(
-                                        color: Theme.of(context).colorScheme.surfaceVariant,
-                                        width: 2,
-                                      ),
-                                    ),
-                                  ),
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return getTranslation('Please enter your username', appLocale);
-                                    }
-
-                                    if (value.length > 16) {
-                                      return getTranslation('It must be smaller than 16 characters', appLocale);
-                                    }
-
-                                    return null;
-                                  },
-                                  autovalidateMode: AutovalidateMode.onUserInteraction,
-                                  onSaved: (value) => _username = value!,    
-                                ),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () {
-                                      Navigator.pop(context);
-
-                                      _textController.clear();
-                                    },
-                                    child: Text(getTranslation('Cancel', appLocale)),
-                                  ),
-                                  TextButton(
-                                    onPressed: () {
-                                      if (_username.isEmpty || _username.length > 16) return;
-                                      
-                                      Navigator.pushReplacement(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => ConnectServerPage(
-                                            _username,
-                                            server.servername,
-                                            server.url,
-                                            server.password,
-                                          ),
-                                        ),
-                                      );
-
-                                      _textController.clear();
-                                    },
-                                    child: Text(getTranslation('Connect', appLocale)),
-                                  ),
-                                ],
-                              ),
-                            );
+                            return true;
                           },
+                          child: AlertDialog(
+                            title: Text(getTranslation('Enter your username', appLocale)),
+                            content: TextFormField(
+                              controller: _textController,
+                              autofocus: true,
+                              decoration: InputDecoration(
+                                filled: true,
+                                fillColor: Theme.of(context).colorScheme.surface,
+                                hintText: getTranslation('Username', appLocale),
+                                contentPadding: const EdgeInsets.all(16),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  borderSide: const BorderSide(width: 2),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  borderSide: BorderSide(
+                                    color: Theme.of(context).colorScheme.surfaceVariant,
+                                    width: 2,
+                                  ),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  borderSide: BorderSide(
+                                    color: Theme.of(context).colorScheme.surfaceVariant,
+                                    width: 2,
+                                  ),
+                                ),
+                              ),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return getTranslation('Please enter your username', appLocale);
+                                }
+
+                                if (value.length > 16) {
+                                  return getTranslation('It must be smaller than 16 characters', appLocale);
+                                }
+
+                                return null;
+                              },
+                              autovalidateMode: AutovalidateMode.onUserInteraction,
+                              onSaved: (value) => _username = value!,    
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.pop(context);
+
+                                  _textController.clear();
+                                },
+                                child: Text(getTranslation('Cancel', appLocale)),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  if (_username.isEmpty || _username.length > 16) return;
+                                  
+                                  Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => ConnectServerPage(
+                                        _username,
+                                        server.servername,
+                                        server.url,
+                                        server.password,
+                                      ),
+                                    ),
+                                  );
+
+                                  _textController.clear();
+                                },
+                                child: Text(getTranslation('Connect', appLocale)),
+                              ),
+                            ],
+                          ),
                         );
                       },
-                    ),
-                  ),
+                    );
+                  },
                 ),
-            ],
-          ),
-        ) : FutureBuilder<List<PublicServer>>(
-          future: getPublicServers(),
-          builder: (context, snapshot) {
-            if (snapshot.hasData) {
-              final serversData = snapshot.data!;
+              ),
+            ),
+        ],
+      ),
+    ) : FutureBuilder<List<PublicServer>>(
+      future: getPublicServers(),
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          final serversData = snapshot.data!;
 
-              if (serversData.isEmpty) {
-                return LayoutBuilder(
-                  builder: (context, constraints) => RefreshIndicator(
-                    onRefresh: () async {
-                      return getPublicServers().then((updatedServers) {
-                        setState(() {
-                          publicServers = updatedServers;
-                        });
-                      });
-                    },
-                    child: SingleChildScrollView(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      child: ConstrainedBox(
-                        constraints: BoxConstraints(
-                          minHeight: constraints.maxHeight,
-                        ),
-                        child: Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [ Text(getTranslation('No public servers was found', appLocale)) ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              }
-
-              publicServers = serversData;
-
-              return RefreshIndicator(
+          if (serversData.isEmpty) {
+            return LayoutBuilder(
+              builder: (context, constraints) => RefreshIndicator(
                 onRefresh: () async {
                   return getPublicServers().then((updatedServers) {
                     setState(() {
@@ -1080,174 +1111,150 @@ class _MyPublicServersPageState extends State<PublicServersPage> {
                     });
                   });
                 },
-                child: ListView(
-                  children: [
-                    for (var server in serversData)
-                      Card(
-                        child: ListTile(
-                          title: Text(server.servername),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          trailing: IconButton(
-                            icon: const Icon(Icons.connect_without_contact_rounded),
-                            alignment: Alignment.centerRight,
-                            onPressed: () {
-                              showDialog(
-                                context: context,
-                                builder: (context) {
-                                  return WillPopScope(
-                                    onWillPop: () async {
-                                      _textController.clear();
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight,
+                    ),
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [ Text(getTranslation('No public servers was found', appLocale)) ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }
 
-                                      return true;
-                                    },
-                                    child: AlertDialog(
-                                      title: Text(getTranslation('Enter your username', appLocale)),
-                                      content: TextFormField(
-                                        controller: _textController,
-                                        autofocus: true,
-                                        decoration: InputDecoration(
-                                          filled: true,
-                                          fillColor: Theme.of(context).colorScheme.surface,
-                                          hintText: getTranslation('Username', appLocale),
-                                          contentPadding: const EdgeInsets.all(16),
-                                          border: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(16),
-                                            borderSide: const BorderSide(width: 2),
-                                          ),
-                                          enabledBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(16),
-                                            borderSide: BorderSide(
-                                              color: Theme.of(context).colorScheme.surfaceVariant,
-                                              width: 2,
-                                            ),
-                                          ),
-                                          focusedBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(16),
-                                            borderSide: BorderSide(
-                                              color: Theme.of(context).colorScheme.surfaceVariant,
-                                              width: 2,
-                                            ),
-                                          ),
-                                        ),
-                                        validator: (value) {
-                                          if (value == null || value.isEmpty) {
-                                            return getTranslation('Please enter your username', appLocale);
-                                          }
+          publicServers = serversData;
 
-                                          if (value.length > 16) {
-                                            return getTranslation('It must be smaller than 16 characters', appLocale);
-                                          }
+          return RefreshIndicator(
+            onRefresh: () async {
+              return getPublicServers().then((updatedServers) {
+                setState(() {
+                  publicServers = updatedServers;
+                });
+              });
+            },
+            child: ListView(
+              children: [
+                for (var server in serversData)
+                  Card(
+                    child: ListTile(
+                      title: Text(server.servername),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.connect_without_contact_rounded),
+                        alignment: Alignment.centerRight,
+                        onPressed: () {
+                          showDialog(
+                            context: context,
+                            builder: (context) {
+                              return WillPopScope(
+                                onWillPop: () async {
+                                  _textController.clear();
 
-                                          return null;
-                                        },
-                                        autovalidateMode: AutovalidateMode.onUserInteraction,
-                                        onSaved: (value) => _username = value!,    
-                                      ),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () {
-                                            Navigator.pop(context);
-
-                                            _textController.clear();
-                                          },
-                                          child: const Text('Cancel'),
-                                        ),
-                                        TextButton(
-                                          onPressed: () {
-                                            if (_username.isEmpty || _username.length > 16) return;
-
-                                            Navigator.pushReplacement(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (context) => ConnectServerPage(
-                                                  _username,
-                                                  server.servername,
-                                                  server.url,
-                                                  server.password,
-                                                ),
-                                              ),
-                                            );
-
-                                            _textController.clear();
-                                          },
-                                          child: const Text('Connect'),
-                                        ),
-                                      ],
-                                    ),
-                                  );
+                                  return true;
                                 },
+                                child: AlertDialog(
+                                  title: Text(getTranslation('Enter your username', appLocale)),
+                                  content: TextFormField(
+                                    controller: _textController,
+                                    autofocus: true,
+                                    decoration: InputDecoration(
+                                      filled: true,
+                                      fillColor: Theme.of(context).colorScheme.surface,
+                                      hintText: getTranslation('Username', appLocale),
+                                      contentPadding: const EdgeInsets.all(16),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(16),
+                                        borderSide: const BorderSide(width: 2),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(16),
+                                        borderSide: BorderSide(
+                                          color: Theme.of(context).colorScheme.surfaceVariant,
+                                          width: 2,
+                                        ),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(16),
+                                        borderSide: BorderSide(
+                                          color: Theme.of(context).colorScheme.surfaceVariant,
+                                          width: 2,
+                                        ),
+                                      ),
+                                    ),
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return getTranslation('Please enter your username', appLocale);
+                                      }
+
+                                      if (value.length > 16) {
+                                        return getTranslation('It must be smaller than 16 characters', appLocale);
+                                      }
+
+                                      return null;
+                                    },
+                                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                                    onSaved: (value) => _username = value!,    
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.pop(context);
+
+                                        _textController.clear();
+                                      },
+                                      child: const Text('Cancel'),
+                                    ),
+                                    TextButton(
+                                      onPressed: () {
+                                        if (_username.isEmpty || _username.length > 16) return;
+
+                                        Navigator.pushReplacement(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => ConnectServerPage(
+                                              _username,
+                                              server.servername,
+                                              server.url,
+                                              server.password,
+                                            ),
+                                          ),
+                                        );
+
+                                        _textController.clear();
+                                      },
+                                      child: const Text('Connect'),
+                                    ),
+                                  ],
+                                ),
                               );
                             },
-                          ),
-                        ),
+                          );
+                        },
                       ),
-                  ],
-                ),
-              );
-            } else if (snapshot.hasError) {
-              return Center(
-                child: Text(snapshot.error.toString()),
-              );
-            }
-
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          },
-        ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const AddPublicServerPage()),
-            );
-          },
-          child: const Icon(Icons.add_rounded),
-        ),
-        bottomNavigationBar: BottomNavigationBar(
-          currentIndex: 1,
-          items: [
-            BottomNavigationBarItem(
-              icon: const Icon(Icons.home_rounded),
-              label: getTranslation('Home', appLocale),
-            ),
-            BottomNavigationBarItem(
-              icon: const Icon(Icons.public_rounded),
-              label: getTranslation('Public servers', appLocale),
-            ),
-            BottomNavigationBarItem(
-              icon: const Icon(Icons.settings_rounded),
-              label: getTranslation('Settings', appLocale),
-            ),
-          ],
-          onTap: (index) {
-            switch (index) {
-              case 0: {
-                Navigator.pop(context);
-
-                break;
-              }
-              case 1: {
-                break;
-              }
-              case 2: {
-                Navigator.pushReplacement(
-                  context,
-                  PageRouteBuilder(
-                    pageBuilder: (context, animation1, animation2) => const SettingsPage(),
-                    transitionDuration: Duration.zero,
-                    reverseTransitionDuration: Duration.zero,
+                    ),
                   ),
-                );
+              ],
+            ),
+          );
+        } else if (snapshot.hasError) {
+          return Center(
+            child: Text(snapshot.error.toString()),
+          );
+        }
 
-                break;
-              }
-            }
-          },
-        ),
-      ),
+        return const Center(
+          child: CircularProgressIndicator(),
+        );
+      },
     );
   }
 }
@@ -1478,75 +1485,14 @@ class _MySettingsPageState extends State<MySettingsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onPanUpdate: (dis) {
-        if (dis.delta.dx > 0) {
-          Navigator.pushReplacement(
-            context,
-            PageRouteBuilder(
-              pageBuilder: (context, animation1, animation2) => const PublicServerPage(),
-              transitionDuration: Duration.zero,
-              reverseTransitionDuration: Duration.zero,
-            ),
-          );
-        }
-      },
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(getTranslation('Settings', appLocale)),
-          automaticallyImplyLeading: false,
-        ),
-        body: const Center(
-          child: Padding(
-            padding: EdgeInsets.all(16),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text('...')
-              ],
-            ),
-          ),
-        ),
-        bottomNavigationBar: BottomNavigationBar(
-          currentIndex: 2,
-          items: [
-            BottomNavigationBarItem(
-              icon: const Icon(Icons.home_rounded),
-              label: getTranslation('Home', appLocale),
-            ),
-            BottomNavigationBarItem(
-              icon: const Icon(Icons.public_rounded),
-              label: getTranslation('Public Servers', appLocale),
-            ),
-            BottomNavigationBarItem(
-              icon: const Icon(Icons.settings_rounded),
-              label: getTranslation('Settings', appLocale),
-            )
+    return const Center(
+      child: Padding(
+        padding: EdgeInsets.all(16),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('...')
           ],
-          onTap: (index) {
-            switch (index) {
-              case 0: {
-                Navigator.pop(context);
-
-                break;
-              }
-              case 1: {
-                Navigator.pushReplacement(
-                  context,
-                  PageRouteBuilder(
-                    pageBuilder: (context, animation1, animation2) => const PublicServerPage(),
-                    transitionDuration: Duration.zero,
-                    reverseTransitionDuration: Duration.zero,
-                  ),
-                );
-
-                break;
-              }
-              case 2: {
-                break;
-              }
-            }
-          },
         ),
       ),
     );
