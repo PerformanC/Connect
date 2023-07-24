@@ -18,7 +18,6 @@
 
 import 'package:flutter/material.dart';
 
-import 'dart:typed_data';
 import 'dart:io';
 import 'dart:convert';
 import 'dart:async';
@@ -93,8 +92,8 @@ class AuthResponse {
 
   factory AuthResponse.fromJson(Map<String, dynamic> json) {
     return AuthResponse(
-      op: json['op'] as String,
-      status: json['status'] as String,
+      op: json['op'],
+      status: json['status'],
     );
   }
 
@@ -116,10 +115,10 @@ class Message {
 
   factory Message.fromJson(Map<String, dynamic> json) {
     return Message(
-      op: json['op'] as String,
-      msg: json['msg'] as String,
-      author: json['author'] as String,
-      authorId: json['authorId'] as int,
+      op: json['op'],
+      msg: json['msg'],
+      author: json['author'],
+      authorId: json['authorId'],
     );
   }
 
@@ -134,26 +133,23 @@ class Message {
 }
 
 class MessageList {
-  MessageList({this.img, this.msg, required this.author, required this.authorId});
+  MessageList({this.msg, required this.author, required this.authorId});
 
   String? msg;
-  Uint8List? img;
   final String author;
   final int authorId;
 
   factory MessageList.fromJson(Map<String, dynamic> json) {
     return MessageList(
-      msg: json['msg'] as String,
-      img: json['img'] as Uint8List,
-      author: json['author'] as String,
-      authorId: json['authorId'] as int,
+      msg: json['msg'],
+      author: json['author'],
+      authorId: json['authorId'],
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'msg': msg,
-      'img': img,
       'author': author,
       'authorId': authorId,
     };
@@ -168,8 +164,8 @@ class UserLog {
 
   factory UserLog.fromJson(Map<String, dynamic> json) {
     return UserLog(
-      op: json['op'] as String,
-      username: json['username'] as String,
+      op: json['op'],
+      username: json['username'],
     );
   }
 
@@ -177,6 +173,27 @@ class UserLog {
     return {
       'op': op,
       'username': username,
+    };
+  }
+}
+
+class Preferences {
+  Preferences({required this.language, required this.materialYou});
+
+  final String language;
+  late final bool materialYou;
+
+  factory Preferences.fromJson(Map<String, dynamic> json) {
+    return Preferences(
+      language: json['language'],
+      materialYou: json['materialYou'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'language': language,
+      'materialYou': materialYou,
     };
   }
 }
@@ -412,13 +429,9 @@ String getTranslation(String string, Locale locale) {
           /* Errors */
           case 'Adding server...': return 'Adicionando servidor...';
 
-
-
-
         default: return string;
       }
     }
-    case 'en': return string;
     default: return string;
   }
 }

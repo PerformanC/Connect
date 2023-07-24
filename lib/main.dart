@@ -19,9 +19,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:dynamic_color/dynamic_color.dart';
-import 'package:image_picker/image_picker.dart';
 
-import 'dart:typed_data';
 import 'dart:io';
 import 'dart:convert';
 import 'dart:async';
@@ -272,17 +270,18 @@ class _MyHomePageState extends State<MyHomePage> {
           const SettingsPage(),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
+      // floatingActionButton only appears on the home page
+      floatingActionButton: currentIndex == 0 || currentIndex == 1 ? FloatingActionButton(
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const AddServerPage()),
+            MaterialPageRoute(builder: (context) => currentIndex == 0 ? const AddServerPage() : const AddPublicServerPage()),
           ).then((_) {
             setState(() {});
           });
         },
         child: const Icon(Icons.add_rounded),
-      ),
+      ) : null,
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: currentIndex,
         items: [
@@ -750,27 +749,11 @@ class _MyChatPageState extends State<MyChatPage> {
           });
           break;
         }
-        case '5': { /* image */
-          String author = parts[1];
-          int authorId = int.tryParse(parts[2]) as int;
-          Uint8List image = Uint8List.fromList(parts[3].codeUnits);
- 
-          setState(() {
-            _addMessage(MessageList(
-              img: image,
-              author: author,
-              authorId: authorId,
-            ));
-          });
-          break;
-        }
       }
     }
 
     widget.controller.stream.listen((payload) {
       final payloadString = utf8.decode(payload);
-
-      // print('payload: "$payloadString"');
 
       _buffer += payloadString;
 
@@ -786,7 +769,6 @@ class _MyChatPageState extends State<MyChatPage> {
     _textController.addListener(() {
       setState(() {});
     });
-
   }
 
   void _addMessage(MessageList message) {
@@ -827,24 +809,6 @@ class _MyChatPageState extends State<MyChatPage> {
     ));
 
     _textController.clear();
-  }
-
-  void _sendImage() async {
-    final image = await ImagePicker().pickImage(source: ImageSource.gallery, requestFullMetadata: false);
-
-    if (image == null) return;
-
-    final bytes = await image.readAsBytes();
-
-    // print("bytes: $bytes");
-
-    widget.socket.write("\i5\j${bytes}\f");
-
-    _addMessage(MessageList(
-      img: bytes,
-      author: widget.username,
-      authorId: -2,
-    ));
   }
 
   @override
@@ -888,13 +852,6 @@ class _MyChatPageState extends State<MyChatPage> {
                         subtitle: Text(message.msg as String),
                       );
                     } else {
-                      if (message.img != null) {
-                        return ListTile(
-                          title: Text(message.author),
-                          subtitle: Image.memory(message.img as Uint8List),
-                        );
-                      }
-
                       return ListTile(
                         title: Text(message.author),
                         subtitle: Text(message.msg as String),
@@ -944,11 +901,7 @@ class _MyChatPageState extends State<MyChatPage> {
                       ),
                     ),
                   ),
-                  FloatingActionButton(
-                    onPressed: _sendImage,
-                    child: const Icon(Icons.image_rounded),
-                  ),
-                  const SizedBox(width: 10),
+                  // const SizedBox(width: 10),
                   FloatingActionButton(
                     onPressed: _textController.text.isEmpty ? null : _sendMessage,
                     child: const Icon(Icons.send_rounded),
@@ -1484,17 +1437,9 @@ class _MySettingsPageState extends State<MySettingsPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) {  
     return const Center(
-      child: Padding(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text('...')
-          ],
-        ),
-      ),
+      child: Text('Currently not used.')
     );
   }
 }

@@ -26,9 +26,11 @@ This project does not log any of your activities, besides the server logs. The s
 
 The app itself doesn't contain (and will never contain) any analytics or tracking code.
 
-## Contributing
+## Want to help?
 
-If you want to contribute to this project, please submit an issue for enhancement or bugfixes. If you want to contribute code, please fork this repository and submit a pull request.
+If you want to contribute to this project, please submit an issue for enhancement or bug fixes. If you want to contribute code, please fork this repository and submit a pull request.
+
+You can also become a tester by letting us know on our [Discord server](https://discord.gg/uPveNfTuCJ) and you'll be notified of incoming updates before pushed to the public.
 
 ## License
 
